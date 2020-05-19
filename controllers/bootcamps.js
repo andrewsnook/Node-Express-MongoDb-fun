@@ -14,6 +14,7 @@ exports.getBootcamps = (req, res, next) => {
 // @access  Public
 
 exports.getBootcamp = (req, res, next) => {
+
     res.status(200).json({success: true, msg: `Get bootcamp ${req.params.id}`});
 }
 
