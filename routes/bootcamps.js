@@ -11,16 +11,17 @@ const {
 
 const Bootcamp = require("../models/Bootcamp");
 
-const advancedResults = require("../middleware/advancedResults");
-
 // include other resourse router
 const courseRouter = require("./courses");
+const reviewRouter = require("./reviews");
 
 const router = express.Router();
 
+const advancedResults = require("../middleware/advancedResults");
 const { protect, authorize } = require("../middleware/auth");
 
 router.use("/:bootcampId/courses", courseRouter);
+router.use("/:bootcampId/reviews", reviewRouter);
 
 router.route("/radius/:zipcode/:distance").get(getBootcampsInRadius);
 
@@ -35,6 +36,7 @@ router
 
 router
   .route("/:id")
+  .get(advancedResults(Bootcamp, "courses"), getBootcamp)
   .put(protect, authorize("publisher", "admin"), updateBootcamp)
   .delete(protect, authorize("publisher", "admin"), deleteBootcamp);
 
