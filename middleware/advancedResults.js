@@ -1,4 +1,4 @@
-const { populate } = require("../models/Bootcamp");
+const { populate } = require("../models/Recommendation");
 
 const advancedResults = (model, populate) => async (req, res, next) => {
   let query;
