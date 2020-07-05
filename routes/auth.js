@@ -1,4 +1,5 @@
 const express = require("express");
+const passport = require("passport");
 const {
   register,
   login,
@@ -23,4 +24,14 @@ router.put("/updatedetails", protect, updateDetails);
 router.put("/updatepassword", protect, updatePassword);
 router.post("/forgotpassword", forgotPassword);
 router.put("/resetpassword/:resettoken", resetPassword);
+router.get("/twitter", passport.authenticate("twitter"));
+
+router.get(
+  "/twitter/callback",
+  passport.authenticate("twitter", { failureRedirect: "/login" }),
+  function (req, res) {
+    res.redirect("http://localhost:5000/api/v1/recommendations/");
+  }
+);
+
 module.exports = router;

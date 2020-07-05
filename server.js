@@ -1,5 +1,8 @@
 const path = require("path");
 const express = require("express");
+var passport = require("passport");
+var Strategy = require("passport-twitter").Strategy;
+var expressSession = require("express-session");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const colours = require("colors");
@@ -20,13 +23,53 @@ dotenv.config({ path: "./config/config.env" });
 // connect to db
 connectDB();
 
+passport.use(
+  new Strategy(
+    {
+      consumerKey: process.env["TWITTER_CONSUMER_KEY"],
+      consumerSecret: process.env["TWITTER_CONSUMER_SECRET"],
+      callbackURL: "http://localhost:5000/api/v1/auth/twitter/callback",
+    },
+    function (token, tokenSecret, profile, cb) {
+      // In this example, the user's Twitter profile is supplied as the user
+      // record.  In a production-quality application, the Twitter profile should
+      // be associated with a user record in the application's database, which
+      // allows for account linking and authentication with other identity
+      // providers.
+
+      return cb(null, profile);
+    }
+  )
+);
+
+passport.serializeUser(function (user, cb) {
+  cb(null, user);
+});
+
+passport.deserializeUser(function (obj, cb) {
+  cb(null, obj);
+});
+
+const app = express();
+
+app.use(
+  require("express-session")({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// Initialize Passport and restore authentication state, if any, from the
+// session.
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Route files
 const recommendations = require("./routes/recommendations");
 const auth = require("./routes/auth");
 const users = require("./routes/users");
 const deepdives = require("./routes/deepdives");
-
-const app = express();
 
 // body parser
 app.use(express.json());
