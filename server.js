@@ -6,6 +6,7 @@ var expressSession = require("express-session");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const colours = require("colors");
+const Twitter = require("twitter");
 const fileupload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -35,7 +36,22 @@ passport.use(
       // record.  In a production-quality application, the Twitter profile should
       // be associated with a user record in the application's database, which
       // allows for account linking and authentication with other identity
-      // providers.
+      // providers.function (req, res) {
+      const client = new Twitter({
+        consumer_key: process.env["TWITTER_CONSUMER_KEY"],
+        consumer_secret: process.env["TWITTER_CONSUMER_SECRET"],
+        access_token_key: token,
+        access_token_secret: tokenSecret,
+      });
+      console.log(client);
+      //console.log(profile);
+      client.get("friends/list", function (error, friends, response) {
+        if (!error) {
+          console.log(friends);
+        } else {
+          console.log(error);
+        }
+      });
 
       return cb(null, profile);
     }
