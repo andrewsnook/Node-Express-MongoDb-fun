@@ -6,7 +6,6 @@ var expressSession = require("express-session");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const colours = require("colors");
-const Twitter = require("twitter");
 const fileupload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -20,51 +19,9 @@ const connectDB = require("./config/db");
 
 // environment vars
 dotenv.config({ path: "./config/config.env" });
-
+require("./config/passport")(passport);
 // connect to db
 connectDB();
-
-passport.use(
-  new Strategy(
-    {
-      consumerKey: process.env["TWITTER_CONSUMER_KEY"],
-      consumerSecret: process.env["TWITTER_CONSUMER_SECRET"],
-      callbackURL: "http://localhost:5000/api/v1/auth/twitter/callback",
-    },
-    function (token, tokenSecret, profile, cb) {
-      // In this example, the user's Twitter profile is supplied as the user
-      // record.  In a production-quality application, the Twitter profile should
-      // be associated with a user record in the application's database, which
-      // allows for account linking and authentication with other identity
-      // providers.function (req, res) {
-      const client = new Twitter({
-        consumer_key: process.env["TWITTER_CONSUMER_KEY"],
-        consumer_secret: process.env["TWITTER_CONSUMER_SECRET"],
-        access_token_key: token,
-        access_token_secret: tokenSecret,
-      });
-      console.log(client);
-      //console.log(profile);
-      client.get("friends/list", function (error, friends, response) {
-        if (!error) {
-          console.log(friends);
-        } else {
-          console.log(error);
-        }
-      });
-
-      return cb(null, profile);
-    }
-  )
-);
-
-passport.serializeUser(function (user, cb) {
-  cb(null, user);
-});
-
-passport.deserializeUser(function (obj, cb) {
-  cb(null, obj);
-});
 
 const app = express();
 

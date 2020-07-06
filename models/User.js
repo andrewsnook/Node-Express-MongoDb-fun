@@ -7,10 +7,18 @@ const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please add a name"],
+    lowercase: true,
   },
+  twitteraccount: { type: Boolean },
   email: {
     type: String,
-    required: [true, "Please add an email"],
+    required: [
+      function () {
+        return !this.twitteraccount;
+      },
+      "Email is required",
+    ],
+    lowercase: true,
     unique: true,
     match: [
       /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
@@ -19,14 +27,19 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "publisher"],
+    enum: ["user", "admin"],
     default: "user",
   },
   password: {
     type: String,
-    required: [true, "Please add a password"],
-    minlength: 6,
+    minlength: [6, "Password must be longer than 6 characters"],
     select: false,
+    required: [
+      function () {
+        return !this.twitteraccount;
+      },
+      "Password is required",
+    ],
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,

@@ -14,7 +14,6 @@ const {
 const router = express.Router();
 
 const { protect } = require("../middleware/auth");
-const { reset } = require("nodemon");
 
 router.post("/register", register);
 router.post("/login", login);
@@ -28,7 +27,7 @@ router.get("/twitter", passport.authenticate("twitter"));
 
 router.get(
   "/twitter/callback",
-  passport.authenticate("twitter", { failureRedirect: "/login" }),
+  passport.authenticate("twitter", { failureRedirect: "/login", login }),
   function (req, res) {
     res.redirect("http://localhost:5000/api/v1/recommendations/");
   }
