@@ -13,13 +13,13 @@ const pass = function (passport) {
       },
       async function (token, tokenSecret, profile, cb) {
         const existingTwitterUser = await User.findOne({
-          name: profile.displayName,
+          email: profile.id + "@mail.com",
         });
 
         if (existingTwitterUser === null) {
           const twitterUser = new User();
           twitterUser.twitteraccount = true;
-          twitterUser.name = profile.displayName;
+          twitterUser.name = profile.username;
           twitterUser.role = "user";
           twitterUser.email = profile.id + "@mail.com"; // hack to get a unique temporary email in place.
           const user = User.create(twitterUser);
@@ -33,7 +33,6 @@ const pass = function (passport) {
           access_token_secret: tokenSecret,
         });
 
-        //console.log(profile);
         client.get("friends/list", function (error, friends, response) {
           if (!error) {
             console.log("no error getting friends");
