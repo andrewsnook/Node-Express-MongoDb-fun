@@ -1,7 +1,6 @@
 var passport = require("passport");
-
 const Twitter = require("twitter");
-const { createUser } = require("../controllers/users");
+const User = require("../models/User");
 var Strategy = require("passport-twitter").Strategy;
 
 const pass = function (passport) {
@@ -12,12 +11,21 @@ const pass = function (passport) {
         consumerSecret: process.env["TWITTER_CONSUMER_SECRET"],
         callbackURL: "http://localhost:5000/api/v1/auth/twitter/callback",
       },
-      function (token, tokenSecret, profile, cb) {
-        // In this example, the user's Twitter profile is supplied as the user
-        // record.  In a production-quality application, the Twitter profile should
-        // be associated with a user record in the application's database, which
-        // allows for account linking and authentication with other identity
-        // providers.function (req, res) {
+      async function (token, tokenSecret, profile, cb) {
+        const existingTwitterUser = await User.findOne({
+          name: profile.displayName,
+        });
+
+        if (existingTwitterUser === null) {
+          const twitterUser = new User();
+          twitterUser.twitteraccount = true;
+          twitterUser.name = profile.displayName;
+          twitterUser.role = "user";
+          twitterUser.email = profile.id + "@mail.com"; // hack to get a unique temporary email in place.
+          const user = User.create(twitterUser);
+        }
+
+        // get twitter friends
         const client = new Twitter({
           consumer_key: process.env["TWITTER_CONSUMER_KEY"],
           consumer_secret: process.env["TWITTER_CONSUMER_SECRET"],
@@ -40,12 +48,10 @@ const pass = function (passport) {
   );
 
   passport.serializeUser(function (user, cb) {
-    console.log("user");
     cb(null, user);
   });
 
   passport.deserializeUser(function (obj, cb) {
-    console.log("profile");
     cb(null, obj);
   });
 };
