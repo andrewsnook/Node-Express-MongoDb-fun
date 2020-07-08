@@ -12,17 +12,17 @@ const pass = function (passport) {
         callbackURL: "http://localhost:5000/api/v1/auth/twitter/callback",
       },
       async function (token, tokenSecret, profile, cb) {
-        const existingTwitterUser = await User.findOne({
+        let twitterUser = await User.findOne({
           email: profile.id + "@mail.com",
         });
 
-        if (existingTwitterUser === null) {
-          const twitterUser = new User();
+        if (twitterUser === null) {
+          twitterUser = new User();
           twitterUser.twitteraccount = true;
           twitterUser.name = profile.username;
           twitterUser.role = "user";
           twitterUser.email = profile.id + "@mail.com"; // hack to get a unique temporary email in place.
-          const user = User.create(twitterUser);
+          User.create(twitterUser);
         }
 
         // get twitter friends
@@ -35,19 +35,22 @@ const pass = function (passport) {
 
         client.get("friends/list", function (error, friends, response) {
           if (!error) {
-            console.log("no error getting friends");
+            var co = { ...profile, ...friends };
+            profile["twitterfriends"] = friends;
+
+            console.log(co);
+            return cb(null, co);
           } else {
             console.log(error);
           }
         });
-
         return cb(null, profile);
       }
     )
   );
 
-  passport.serializeUser(function (user, cb) {
-    cb(null, user);
+  passport.serializeUser(function (co, cb) {
+    cb(null, co);
   });
 
   passport.deserializeUser(function (obj, cb) {
