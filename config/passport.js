@@ -1,6 +1,8 @@
 var passport = require("passport");
 const Twitter = require("twitter");
 const User = require("../models/User");
+const { json } = require("express");
+const { PromiseProvider } = require("mongoose");
 var Strategy = require("passport-twitter").Strategy;
 
 const pass = function (passport) {
@@ -35,22 +37,29 @@ const pass = function (passport) {
 
         client.get("friends/list", function (error, friends, response) {
           if (!error) {
-            var co = { ...profile, ...friends };
-            profile["twitterfriends"] = friends;
+            const props = ["id", "screen_name", "name"];
 
-            console.log(co);
-            return cb(null, co);
+            // const friendsJson = JSON.stringify(friends);
+
+            // const friendsList = JSON.parse(friendsJson);
+
+            const twitterProfileWithFriends = {
+              p: profile,
+              f: friends,
+            };
+
+            return cb(null, twitterProfileWithFriends);
           } else {
             console.log(error);
           }
         });
-        return cb(null, profile);
+        //return cb(null, profile);
       }
     )
   );
 
-  passport.serializeUser(function (co, cb) {
-    cb(null, co);
+  passport.serializeUser(function (twitterProfileWithFriends, cb) {
+    cb(null, twitterProfileWithFriends);
   });
 
   passport.deserializeUser(function (obj, cb) {
